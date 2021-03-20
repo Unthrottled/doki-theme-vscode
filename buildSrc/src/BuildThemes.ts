@@ -12,6 +12,8 @@ import {
   SYNTAX_TYPE, 
   evaluateTemplates, 
   readJson,
+  getGroupName,
+  resolveStickerPath,
 } from "doki-build-source";
 import keys from "lodash/keys";
 
@@ -195,29 +197,6 @@ function createDokiTheme(
   }
 }
 
-// todo: this
-function resolveStickerPath(themeDefinitonPath: string, sticker: string) {
-  const stickerPath = path.resolve(
-    path.resolve(themeDefinitonPath, ".."),
-    sticker
-  );
-  return stickerPath
-    .substring(vsCodeDefinitionDirectoryPath.length)
-    .replace(/\\/g, "/");
-}
-
-// todo: this
-function getThemeGroup(dokiDefinition: MasterDokiThemeDefinition) {
-  const themeGroup = dokiDefinition.group;
-  const groupMapping = GroupToNameMapping[themeGroup];
-
-  if (!groupMapping) {
-    throw new Error(`Unable to find group mapping
-        ${themeGroup} for theme ${dokiDefinition.name}`);
-  }
-
-  return groupMapping;
-}
 
 const getStickers = (
   dokiDefinition: MasterDokiThemeDefinition,
@@ -228,14 +207,14 @@ const getStickers = (
   const backgrounds = dokiTheme.backgrounds;
   return {
     default: {
-      path: resolveStickerPath(dokiTheme.path, dokiDefinition.stickers.default),
+      path: resolveStickerPath(dokiTheme.path, dokiDefinition.stickers.default, __dirname),
       name: dokiDefinition.stickers.default,
       anchoring: backgrounds?.default?.anchor || "center",
     },
     ...(secondary
       ? {
           secondary: {
-            path: resolveStickerPath(dokiTheme.path, secondary),
+            path: resolveStickerPath(dokiTheme.path, secondary, __dirname),
             name: secondary,
             anchoring: backgrounds?.secondary?.anchor || "center",
           },
@@ -321,7 +300,7 @@ evaluateTemplates(
     const sakurajimaMaiID = '0527c6fc-316a-4f80-9459-d92ced0e6492';
     const themes = dokiDefinitions.map((dokiDefinition) => ({
       id: dokiDefinition.id,
-      label: `Doki Theme: ${getThemeGroup(dokiDefinition)} ${
+      label: `Doki Theme: ${getGroupName(dokiDefinition)} ${
         dokiDefinition.displayName
       }`,
       path: `./${themeOutputDirectory}/${dokiDefinition.name}${themePostfix}`,
