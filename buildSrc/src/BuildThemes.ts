@@ -7,7 +7,11 @@ import {
   DokiThemeDefinitions,
   resolveTemplate,
   resolveColor,
-  applyNamedColors, GroupToNameMapping, SYNTAX_TYPE, evaluateTemplates, readJson,
+  applyNamedColors, 
+  GroupToNameMapping, 
+  SYNTAX_TYPE, 
+  evaluateTemplates, 
+  readJson,
 } from "doki-build-source";
 import keys from "lodash/keys";
 
@@ -48,6 +52,7 @@ function buildLAFColors(
   dokiThemeTemplateJson: MasterDokiThemeDefinition,
   dokiVSCodeThemeTemplateJson: VSCodeDokiThemeDefinition,
   dokiTemplateDefinitions: DokiThemeDefinitions,
+  masterTemplates: DokiThemeDefinitions,
 ) {
   const lafTemplates = dokiTemplateDefinitions[LAF_TYPE];
   const lafTemplate = dokiVSCodeThemeTemplateJson.laf.extends
@@ -69,13 +74,14 @@ function buildLAFColors(
   );
 
   const resolvedMasterNameColors = resolveNamedColors(
+    masterTemplates,
     dokiThemeTemplateJson,
-    dokiVSCodeThemeTemplateJson
   );  
 
   return applyNamedColors(resolvedLafTemplate, {
     ...resolvedMasterNameColors,
     ...resolvedNamedColors,
+    ...dokiVSCodeThemeTemplateJson.colors,
   });
 }
 
@@ -95,6 +101,7 @@ function buildSyntaxColors(
   dokiThemeTemplateJson: MasterDokiThemeDefinition,
   dokiThemeVSCodeTemplateJson: VSCodeDokiThemeDefinition,
   dokiTemplateDefinitions: DokiThemeDefinitions,
+  masterTemplates: DokiThemeDefinitions,
 ) {
   const syntaxTemplate: any[] =
     dokiTemplateDefinitions[SYNTAX_TYPE].base.tokenColors;
@@ -104,15 +111,15 @@ function buildSyntaxColors(
     dokiThemeVSCodeTemplateJson?.overrides?.editorScheme?.colors || {};
   const resolvedNamedColors = {
     ...resolveNamedColors(
+      masterTemplates,
       dokiThemeTemplateJson,
-      dokiThemeVSCodeTemplateJson
     ),
     ...resolveNamedColors(
       dokiTemplateDefinitions,
       dokiThemeTemplateJson,
-      dokiThemeVSCodeTemplateJson
     ),
     ...overrides,
+    ...dokiThemeVSCodeTemplateJson.colors,
   };
 
   return syntaxTemplate.map((tokenSpecification) => {
@@ -143,6 +150,7 @@ function buildVSCodeTheme(
   dokiThemeDefinition: MasterDokiThemeDefinition,
   dokiThemeVSCodeDefinition: VSCodeDokiThemeDefinition,
   dokiTemplateDefinitions: DokiThemeDefinitions,
+  masterTemplates: DokiThemeDefinitions,
 ) {
   return {
     type: getThemeType(dokiThemeDefinition),
@@ -150,11 +158,13 @@ function buildVSCodeTheme(
       dokiThemeDefinition,
       dokiThemeVSCodeDefinition,
       dokiTemplateDefinitions,
+      masterTemplates,
     ),
     tokenColors: buildSyntaxColors(
       dokiThemeDefinition,
       dokiThemeVSCodeDefinition,
       dokiTemplateDefinitions,
+      masterTemplates,
     ),
   };
 }
@@ -164,6 +174,7 @@ function createDokiTheme(
   dokiThemeDefinition: MasterDokiThemeDefinition,
   dokiTemplateDefinitions: DokiThemeDefinitions,
   dokiThemeVSCodeDefinition: VSCodeDokiThemeDefinition,
+  masterTemplates: DokiThemeDefinitions,
 ) {
   try {
     return {
@@ -174,6 +185,7 @@ function createDokiTheme(
         dokiThemeDefinition,
         dokiThemeVSCodeDefinition,
         dokiTemplateDefinitions,
+        masterTemplates,
       ),
     };
   } catch (e) {
@@ -306,7 +318,7 @@ evaluateTemplates(
       }`,
     }));
 
-    const ishtarId = '62a4f26f-34b2-46f8-a10c-798e48c1ce9d';
+    const sakurajimaMaiID = '0527c6fc-316a-4f80-9459-d92ced0e6492';
     const themes = dokiDefinitions.map((dokiDefinition) => ({
       id: dokiDefinition.id,
       label: `Doki Theme: ${getThemeGroup(dokiDefinition)} ${
@@ -315,9 +327,9 @@ evaluateTemplates(
       path: `./${themeOutputDirectory}/${dokiDefinition.name}${themePostfix}`,
       uiTheme: dokiDefinition.dark ? "vs-dark" : "vs",
     })).sort((a, b) => {
-      if(a.id === ishtarId) {
+      if(a.id === sakurajimaMaiID) {
         return -1;
-      } else if (b.id === ishtarId) {
+      } else if (b.id === sakurajimaMaiID) {
         return 1;
       } else {
         return a.label.localeCompare(b.label);
@@ -340,7 +352,7 @@ evaluateTemplates(
       ...commands,
     ];
     packageJson.contributes.themes = themes;
-    return new Promise((resolve, reject) =>
+    return new Promise<void>((resolve, reject) =>
       fs.writeFile(
         packageJsonPath,
         JSON.stringify(packageJson, null, 2),
