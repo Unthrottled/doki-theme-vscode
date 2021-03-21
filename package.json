@@ -567,12 +567,6 @@
     ],
     "themes": [
       {
-        "id": "62a4f26f-34b2-46f8-a10c-798e48c1ce9d",
-        "label": "Doki Theme: Fate:  Ishtar",
-        "path": "./generatedThemes/Ishtar Dark.theme.json",
-        "uiTheme": "vs-dark"
-      },
-      {
         "id": "0527c6fc-316a-4f80-9459-d92ced0e6492",
         "label": "Doki Theme: BunnySenpai:  Mai",
         "path": "./generatedThemes/Mai Dark.theme.json",
@@ -660,6 +654,12 @@
         "id": "8e8773ee-4bbb-4812-b311-005f04f6bb20",
         "label": "Doki Theme: EVA:  Misato",
         "path": "./generatedThemes/Katsuragi Misato.theme.json",
+        "uiTheme": "vs-dark"
+      },
+      {
+        "id": "62a4f26f-34b2-46f8-a10c-798e48c1ce9d",
+        "label": "Doki Theme: Fate:  Ishtar",
+        "path": "./generatedThemes/Ishtar Dark.theme.json",
         "uiTheme": "vs-dark"
       },
       {
@@ -810,13 +810,8 @@
   },
   "scripts": {
     "package": "vsce package",
-    "package:ultimate": "PRODUCT=ultimate yarn package",
     "vscode:prepublish": "yarn run compile",
     "vscode:uninstall": "node ./out/Cleanup.js",
-    "buildThemes": "ts-node ./buildSrc/BuildThemes.ts",
-    "buildThemes:ultimate": "PRODUCT=ultimate yarn buildThemes",
-    "precompile": "yarn buildThemes",
-    "prewatch": "yarn buildThemes",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile",

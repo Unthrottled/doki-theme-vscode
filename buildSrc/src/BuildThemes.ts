@@ -219,7 +219,7 @@ const omit = require("lodash/omit");
 console.log("Preparing to generate themes.");
 evaluateTemplates(
   {
-    appName: "vscode",
+    appName: "vsCode",
     currentWorkingDirectory: __dirname,
   },
   createDokiTheme
