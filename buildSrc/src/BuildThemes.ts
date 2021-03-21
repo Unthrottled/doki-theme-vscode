@@ -7,13 +7,12 @@ import {
   DokiThemeDefinitions,
   resolveTemplate,
   resolveColor,
-  applyNamedColors, 
-  GroupToNameMapping, 
-  SYNTAX_TYPE, 
-  evaluateTemplates, 
+  applyNamedColors,
+  SYNTAX_TYPE,
+  evaluateTemplates,
   readJson,
   getGroupName,
-  resolveStickerPath,
+  resolveStickerPath, resolvePaths,
 } from "doki-build-source";
 import keys from "lodash/keys";
 
@@ -21,20 +20,13 @@ type VSCodeDokiThemeDefinition = BaseAppDokiThemeDefinition;
 
 const path = require("path");
 
-const repoDirectory = path.resolve(__dirname, "..");
+const {
+  repoDirectory,
+  masterThemeDefinitionDirectoryPath,
+  appDefinitionDirectoryPath,
+} = resolvePaths(__dirname);
 
 const fs = require("fs");
-
-const masterThemeDefinitionDirectoryPath = path.resolve(
-  repoDirectory,
-  "masterThemes",
-  "definitions"
-);
-const vsCodeDefinitionDirectoryPath = path.resolve(
-  repoDirectory,
-  "themes",
-  "definitions"
-);
 
 const swapMasterThemeForLocalTheme = (
   masterDokiThemeDefinitionPath: string
@@ -42,7 +34,7 @@ const swapMasterThemeForLocalTheme = (
   const masterThemeFilePath = masterDokiThemeDefinitionPath.substring(
     masterThemeDefinitionDirectoryPath.toString().length
   );
-  return `${vsCodeDefinitionDirectoryPath}${masterThemeFilePath}`;
+  return `${appDefinitionDirectoryPath}${masterThemeFilePath}`;
 };
 
 function getThemeType(dokiThemeTemplateJson: MasterDokiThemeDefinition) {
@@ -86,7 +78,6 @@ function buildLAFColors(
     ...dokiVSCodeThemeTemplateJson.colors,
   });
 }
-
 
 function getSyntaxColor(
   syntaxSettingsValue: string,
