@@ -41,7 +41,6 @@ function getThemeType(dokiThemeTemplateJson: MasterDokiThemeDefinition) {
   return dokiThemeTemplateJson.dark ? "dark" : "light";
 }
 
-
 function buildLAFColors(
   dokiThemeTemplateJson: MasterDokiThemeDefinition,
   dokiVSCodeThemeTemplateJson: VSCodeDokiThemeDefinition,
