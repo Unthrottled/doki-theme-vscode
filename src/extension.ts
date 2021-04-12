@@ -6,7 +6,7 @@ import {
   getSticker,
   uninstallImages,
 } from "./ThemeManager";
-import {DokiSticker, DokiTheme, StickerType, StringDictionary} from "./DokiTheme";
+import {DokiSticker, DokiTheme, StickerType} from "./DokiTheme";
 import DokiThemeDefinitions from "./DokiThemeDefinitions";
 import {StatusBarComponent} from "./StatusBar";
 import {VSCodeGlobals} from "./VSCodeGlobals";
