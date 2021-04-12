@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import fs from "fs";
 import {editorCss, editorCssCopy} from "./ENV";
 import {attemptToUpdateSticker} from "./StickerUpdateService";
-import {Sticker} from "./extension";
+import {DokiTheme, WeebificationAssets} from "./DokiTheme";
 
 export enum InstallStatus {
   INSTALLED,
@@ -18,10 +18,13 @@ const getWallpaperIndex = (currentCss: string) => currentCss.indexOf(wallpaperCo
 
 
 function buildWallpaperCss({
-                             backgroundImageURL: backgroundUrl,
-                             wallpaperImageURL: wallpaperURL,
-                             backgroundAnchoring,
-                           }: DokiStickers): string {
+                             stickerAssets: {
+                               backgroundImageURL: backgroundUrl,
+                               wallpaperImageURL: wallpaperURL,
+                               backgroundAnchoring,
+                             },
+                             theme: {colors},
+                           }: CSSAssets): string {
   return `${wallpaperComment}
   [id="workbench.parts.editor"] .split-view-view .editor-container .editor-instance>.monaco-editor .overflow-guard>.monaco-scrollable-element>.monaco-editor-background{background: none;}
 
@@ -54,8 +57,13 @@ function buildWallpaperCss({
     background-color: #00000000 !important;
   }
 
+  [id="workbench.view.explorer"] .pane-header {
+    background-color: ${colors.baseBackground}88 !important;
+    background-image: none !important;
+    border: none !important;
+  }
+
   [id="workbench.view.explorer"] .monaco-list-rows,
-  [id="workbench.view.explorer"] .pane-header,
   [id="workbench.view.explorer"] .monaco-pane-view,
   [id="workbench.view.explorer"] .split-view-view,
   [id="workbench.view.explorer"] .monaco-tl-twistie,
@@ -89,8 +97,10 @@ function buildWallpaperCss({
 }
 
 function buildStickerCss({
-                           stickerDataURL: stickerUrl,
-                         }: DokiStickers): string {
+                           stickerAssets: {
+                             stickerDataURL: stickerUrl,
+                           },
+                         }: CSSAssets): string {
   const style =
     "content:'';pointer-events:none;position:absolute;z-index:9001;width:100%;height:100%;background-position:100% 97%;background-repeat:no-repeat;opacity:1;";
   return `
@@ -105,12 +115,12 @@ function buildStickerCss({
 `;
 }
 
-function buildCSSWithStickers(dokiStickers: DokiStickers): string {
-  return `${getStickerScrubbedCSS()}${buildStickerCss(dokiStickers)}`;
+function buildCSSWithStickers(cssAssets: CSSAssets): string {
+  return `${getStickerScrubbedCSS()}${buildStickerCss(cssAssets)}`;
 }
 
-function buildCSSWithWallpaper(dokiStickers: DokiStickers): string {
-  return `${getWallpaperScrubbedCSS()}${buildWallpaperCss(dokiStickers)}`;
+function buildCSSWithWallpaper(cssAssets: CSSAssets): string {
+  return `${getWallpaperScrubbedCSS()}${buildWallpaperCss(cssAssets)}`;
 }
 
 function installEditorStyles(styles: string) {
@@ -126,6 +136,11 @@ function canWrite(): boolean {
   }
 }
 
+export interface CSSAssets {
+  stickerAssets: DokiStickers;
+  theme: DokiTheme;
+}
+
 export interface DokiStickers {
   stickerDataURL: string;
   backgroundImageURL: string;
@@ -134,37 +149,40 @@ export interface DokiStickers {
 }
 
 export async function installStickers(
-  sticker: Sticker,
-  context: vscode.ExtensionContext
+  weebificationAssets: WeebificationAssets,
+  context: vscode.ExtensionContext,
 ): Promise<boolean> {
   return installStyles(
-    sticker,
+    weebificationAssets,
     context,
     stickersAndWallpaper => buildCSSWithStickers(stickersAndWallpaper));
 }
 
 export async function installWallPaper(
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ): Promise<boolean> {
   return installStyles(
-    sticker,
+    weebificationAssets,
     context,
     stickersAndWallpaper => buildCSSWithWallpaper(stickersAndWallpaper));
 }
 
 async function installStyles(
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext,
-  cssDecorator: (assets: DokiStickers) => string
+  cssDecorator: (assets: CSSAssets) => string
 ): Promise<boolean> {
   if (canWrite()) {
     try {
       const stickersAndWallpaper = await attemptToUpdateSticker(
         context,
-        sticker
+        weebificationAssets.waifuAsset.sticker
       );
-      const stickerStyles = cssDecorator(stickersAndWallpaper);
+      const stickerStyles = cssDecorator({
+        stickerAssets: stickersAndWallpaper,
+        theme: weebificationAssets.theme,
+      });
       installEditorStyles(stickerStyles);
       return true;
     } catch (e) {
@@ -205,6 +223,7 @@ function getWallpaperScrubbedCSS() {
     getWallpaperIndex,
   );
 }
+
 function getStickerScrubbedCSS() {
   return scrubCssOfAsset(
     getWallpaperIndex,

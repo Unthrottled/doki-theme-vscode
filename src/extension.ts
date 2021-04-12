@@ -6,13 +6,14 @@ import {
   getSticker,
   uninstallImages,
 } from "./ThemeManager";
-import {DokiSticker, DokiTheme, StickerType} from "./DokiTheme";
+import {DokiSticker, DokiTheme, StickerType, StringDictionary} from "./DokiTheme";
 import DokiThemeDefinitions from "./DokiThemeDefinitions";
 import {StatusBarComponent} from "./StatusBar";
 import {VSCodeGlobals} from "./VSCodeGlobals";
 import {attemptToNotifyUpdates} from "./NotificationService";
 import {showChanglog} from "./ChangelogService";
 import {attemptToUpdateSticker} from "./StickerUpdateService";
+
 
 export interface Sticker {
   path: string;
@@ -26,6 +27,7 @@ export interface DokiThemeDefinition {
     secondary?: Sticker;
   };
   information: any;
+  colors: any;
 }
 
 export interface VSCodeDokiThemeDefinition {
@@ -85,12 +87,17 @@ export function activate(context: vscode.ExtensionContext) {
     .reduce((accum, next) => accum.concat(next), [])
     .map(({dokiThemeDefinition, extensionCommand}) =>
       vscode.commands.registerCommand(extensionCommand, () => {
-          const dokiTheme = new DokiTheme(dokiThemeDefinition.themeDefinition);
-          const currentSticker = getCurrentSticker(extensionCommand, dokiThemeDefinition.themeDefinition);
-          if (isStickerCommand(extensionCommand)) {
-            activateThemeSticker(dokiTheme, currentSticker, context);
+        const weebificationAssets = {
+          theme: new DokiTheme(dokiThemeDefinition.themeDefinition),
+          waifuAsset: getCurrentSticker(
+            extensionCommand,
+            dokiThemeDefinition.themeDefinition
+          ),
+        };
+        if (isStickerCommand(extensionCommand)) {
+            activateThemeSticker(weebificationAssets, context);
           } else {
-            activateThemeWallpaper(dokiTheme, currentSticker, context);
+            activateThemeWallpaper(weebificationAssets, context);
           }
         }
       )

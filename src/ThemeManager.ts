@@ -1,19 +1,11 @@
 import * as vscode from "vscode";
-import { DokiSticker, DokiTheme, StickerType } from "./DokiTheme";
-import {
-  InstallStatus,
-  installStickers,
-  installWallPaper,
-  removeStickers,
-} from "./StickerService";
-import { VSCodeGlobals } from "./VSCodeGlobals";
-import { StatusBarComponent } from "./StatusBar";
-import {
-  showStickerInstallationSupportWindow,
-  showStickerRemovalSupportWindow,
-} from "./SupportService";
+import {DokiSticker, DokiTheme, StickerType, WeebificationAssets} from "./DokiTheme";
+import {InstallStatus, installStickers, installWallPaper, removeStickers,} from "./StickerService";
+import {VSCodeGlobals} from "./VSCodeGlobals";
+import {StatusBarComponent} from "./StatusBar";
+import {showStickerInstallationSupportWindow, showStickerRemovalSupportWindow,} from "./SupportService";
 import DokiThemeDefinitions from "./DokiThemeDefinitions";
-import { DokiThemeDefinition, Sticker } from "./extension";
+import {DokiThemeDefinition, Sticker} from "./extension";
 
 export const ACTIVE_THEME = "doki.theme.active";
 
@@ -60,10 +52,10 @@ async function conditionalInstall(
 
 async function attemptToInstallAsset(
   context: vscode.ExtensionContext,
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   installAsset: () => Promise<InstallStatus>
 ): Promise<InstallStatus> {
-  if (isCultured(context, sticker)) {
+  if (isCultured(context, weebificationAssets.waifuAsset.sticker)) {
     const storageKey = CULTURED_STICKER_INSTALL;
     const actionText = "Yes, Please!";
     const messageBody = `You are about to install sexually suggestive content. Are you sure you want to continue? I won't show you this message again in the future if you choose to install.`;
@@ -90,20 +82,20 @@ async function attemptToInstallAsset(
 }
 
 async function attemptToInstallSticker(
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ): Promise<InstallStatus> {
-  return attemptToInstallAsset(context, sticker, () =>
-    performStickerInstall(sticker, context)
+  return attemptToInstallAsset(context, weebificationAssets, () =>
+    performStickerInstall(weebificationAssets, context)
   );
 }
 
 async function attemptToInstallWallpaper(
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ): Promise<InstallStatus> {
-  return attemptToInstallAsset(context, sticker, () =>
-    performWallpaperInstall(sticker, context)
+  return attemptToInstallAsset(context, weebificationAssets, () =>
+    performWallpaperInstall(weebificationAssets, context)
   );
 }
 
@@ -112,75 +104,74 @@ function getInstallStatus(installResult: boolean) {
 }
 
 async function performStickerInstall(
-  sticker: Sticker,
-  context: vscode.ExtensionContext
+  weebificationAssets: WeebificationAssets,
+  context: vscode.ExtensionContext,
 ): Promise<InstallStatus> {
-  const installResult = await installStickers(sticker, context);
+  const installResult = await installStickers(weebificationAssets, context);
   return getInstallStatus(installResult);
 }
 
 async function performWallpaperInstall(
-  sticker: Sticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ): Promise<InstallStatus> {
-  const installResult = await installWallPaper(sticker, context);
+  const installResult = await installWallPaper(weebificationAssets, context);
   return getInstallStatus(installResult);
 }
 
 export function activateThemeSticker(
-  dokiTheme: DokiTheme,
-  currentSticker: DokiSticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ) {
   return activateThemeAsset(
-    dokiTheme,
-    currentSticker,
+    weebificationAssets,
     context,
     "Sticker",
-    (sticker) => attemptToInstallSticker(sticker, context)
+    (weebAssets) => attemptToInstallSticker(weebAssets, context)
   );
 }
 
 export function activateThemeWallpaper(
-  dokiTheme: DokiTheme,
-  currentSticker: DokiSticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext
 ) {
   return activateThemeAsset(
-    dokiTheme,
-    currentSticker,
+    weebificationAssets,
     context,
     "Wallpaper",
-    (sticker) => attemptToInstallWallpaper(sticker, context)
+    (weebAssets) => attemptToInstallWallpaper(weebAssets, context)
   );
 }
 
 export function activateThemeAsset(
-  dokiTheme: DokiTheme,
-  currentSticker: DokiSticker,
+  weebificationAssets: WeebificationAssets,
   context: vscode.ExtensionContext,
   assetType: string,
-  installer: (sticker: Sticker) => Promise<InstallStatus>
+  installer: (weebificationAssets: WeebificationAssets) => Promise<InstallStatus>
 ) {
+  const {
+    waifuAsset: currentSticker,
+    theme: dokiTheme
+  } = weebificationAssets;
   vscode.window.showInformationMessage(
     `Please wait, installing ${dokiTheme.name}'s ${assetType}.`
   );
-  installer(currentSticker.sticker).then((didInstall) => {
-    if (didInstall === InstallStatus.INSTALLED) {
+  installer(weebificationAssets).then((installStatus) => {
+    if (installStatus === InstallStatus.INSTALLED) {
       VSCodeGlobals.globalState.update(ACTIVE_THEME, dokiTheme.id);
       VSCodeGlobals.globalState.update(ACTIVE_STICKER, currentSticker.type);
       StatusBarComponent.setText(dokiTheme.displayName);
       vscode.window
         .showInformationMessage(
           `${dokiTheme.name}'s ${assetType} installed!\n Please restart your VSCode`,
-          { title: "Restart VSCode" }
+          {title: "Restart VSCode"}
         )
         .then((item) => {
           if (item) {
             vscode.commands.executeCommand("workbench.action.reloadWindow");
           }
         });
-    } else if (didInstall === InstallStatus.FAILURE) {
+    } else if (installStatus === InstallStatus.FAILURE) {
       showStickerInstallationSupportWindow(context);
       vscode.window.showErrorMessage(
         `Unable to install ${dokiTheme.name}, please see active tab for more information.`
@@ -199,7 +190,7 @@ export function uninstallImages(context: vscode.ExtensionContext) {
     vscode.window
       .showInformationMessage(
         `Removed Images. Please restart your restored IDE`,
-        { title: "Restart VSCode" }
+        {title: "Restart VSCode"}
       )
       .then((item) => {
         if (item) {
@@ -248,6 +239,7 @@ export function getSticker(
     ? dokiThemeDefinition.stickers.secondary || defaultSticker
     : defaultSticker;
 }
+
 function isCultured(
   context: vscode.ExtensionContext,
   sticker: Sticker

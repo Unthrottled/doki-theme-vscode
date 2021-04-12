@@ -236,6 +236,7 @@ evaluateTemplates(
             "ui",
             "icons",
           ]),
+          colors: dokiDefinition.colors,
           stickers: getStickers(dokiDefinition, dokiTheme),
         },
       };
