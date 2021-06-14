@@ -61,6 +61,7 @@ You can choose themes from various, Anime, Manga, or Visual Novels:
     - [Asset Removal](#remove-assets)
     - [Show Changelog](#show-changelog)
 - [Miscellaneous](#miscellaneous)
+    - [Contributing](#contributing)
     - [Theme Requests](#theme-requests)
     - [Helping the community](#enjoying-the-plugin)
     - [Feature Requests](#contributions)
@@ -122,6 +123,11 @@ I've also supplied a `Show Changelog` action that will bring up the changes in y
 ![Show changelog](./readmeStuff/changelog.png)
 
 # Miscellaneous
+
+## Contributing
+
+If you want to get your workstation set up to work on the plugin,
+then you'll want to check out the [CONTRIBUTING.md](./CONTRIBUTING.md) for instructions on what is needed.
 
 ## Theme Requests
 
